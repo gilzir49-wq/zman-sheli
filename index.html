@@ -1,0 +1,508 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>הזמן שלי</title>
+<meta name="theme-color" content="#FFB703">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="הזמן שלי">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="manifest" href="manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#FFF8EC;--ink:#2B2D42;--day:#FFB703;--week:#FB5607;--month:#8338EC;--year:#3A86FF;--cmp:#06B38A;--pizza:#E63946}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:'Varela Round',system-ui,sans-serif}
+body{min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+button{font-family:inherit;color:var(--ink);border:0;cursor:pointer}
+.wrap{max-width:560px;margin:0 auto;padding:12px 16px 40px}
+header{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 0 10px}
+header h1{margin:0;font-size:26px}
+.stars{background:#fff;border-radius:99px;padding:6px 14px;font-size:20px;box-shadow:0 3px 0 #0001}
+.iconbtn{background:#fff;border-radius:50%;width:44px;height:44px;font-size:22px;box-shadow:0 3px 0 #0001;color:var(--ink)}
+.screen{display:none}.screen.on{display:block;animation:pop .25s ease}
+@keyframes pop{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
+.card{background:#fff;border-radius:24px;padding:16px;box-shadow:0 5px 0 #0000000f;margin-bottom:14px}
+.today{text-align:center;font-size:22px;line-height:1.6}
+.today b{font-size:26px}
+.hint{font-size:14px;opacity:.65;text-align:center}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.tile{border-radius:24px;padding:18px 8px;color:#fff;font-size:22px;text-align:center;box-shadow:0 5px 0 #0002;min-height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+.tile .e{font-size:48px;line-height:1}
+.tile.wide{grid-column:1/-1;flex-direction:row;gap:12px;min-height:84px}
+.tile:active,.big:active,.opt:active,.say:active{transform:translateY(3px);box-shadow:0 2px 0 #0002}
+.big{display:block;width:100%;border-radius:22px;padding:16px;font-size:24px;color:#fff;box-shadow:0 5px 0 #0002;margin:10px 0}
+.back{background:#fff;border-radius:99px;padding:8px 16px;font-size:18px;box-shadow:0 3px 0 #0001;color:var(--ink)}
+h2{margin:6px 0 12px;font-size:28px;text-align:center}
+.lead{font-size:20px;line-height:1.6;text-align:center;margin:0 0 6px}
+.say{cursor:pointer}
+.row4{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.mini{border-radius:20px;padding:14px 8px;text-align:center;font-size:19px;box-shadow:0 4px 0 #0000000f;background:#FFF3D6}
+.mini .e{font-size:44px;display:block}
+.mini small{display:block;font-size:14px;opacity:.7;margin-top:4px}
+/* רכבת */
+.train{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;padding:6px 0}
+.car{width:calc(25% - 8px);min-width:70px;border-radius:14px 14px 8px 8px;padding:10px 4px 16px;color:#fff;text-align:center;font-size:17px;position:relative;box-shadow:0 4px 0 #0002;transition:transform .2s}
+.car .n{font-size:26px;display:block}
+.car:after{content:"● ●";position:absolute;bottom:-4px;left:0;right:0;font-size:14px;color:#2B2D42}
+.car.today{outline:4px solid #2B2D42;outline-offset:2px}
+.car.lit{transform:scale(1.15) translateY(-6px)}
+.tag{display:inline-block;background:#2B2D42;color:#fff;border-radius:99px;padding:2px 10px;font-size:13px;margin-top:4px}
+/* לוח חודש */
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}
+.cal div{padding:8px 0;border-radius:10px;font-size:17px}
+.cal .h{font-weight:bold;opacity:.6;font-size:15px}
+.cal .d{background:#F3ECFF}
+.cal .past{background:#8338EC;color:#fff}
+.cal .now{background:#FB5607;color:#fff;transform:scale(1.12);font-weight:bold}
+.months{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.mo{border-radius:16px;padding:10px 4px;text-align:center;font-size:16px;background:#F3ECFF}
+.mo .e{font-size:30px;display:block}
+.mo.cur{background:#8338EC;color:#fff}
+/* פיצה */
+.pizzaBox{text-align:center}
+.pizzaBox svg{width:100%;max-width:340px;height:auto;touch-action:manipulation}
+.slice{cursor:pointer;transition:transform .2s}
+.slice.pulse{transform:scale(1.06)}
+.years{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:8px 0}
+.years svg{width:60px;height:60px;cursor:pointer}
+.bignum{font-size:34px;font-weight:bold}
+.legend{display:flex;gap:14px;justify-content:center;font-size:15px;margin-top:6px;flex-wrap:wrap}
+.legend i{display:inline-block;width:16px;height:16px;border-radius:4px;vertical-align:middle;margin-left:4px}
+.seasons{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cake{font-size:40px;text-align:center;letter-spacing:4px;min-height:52px}
+.cake span{cursor:pointer;display:inline-block}
+/* השוואה */
+.ladder .step{display:flex;align-items:center;gap:10px;background:#E6FBF5;border-radius:18px;padding:10px 12px;margin-bottom:8px;font-size:18px}
+.ladder .step .e{font-size:30px}
+.ladder .eq{font-size:22px;word-break:break-all;flex:1;line-height:1.3}
+.bar{height:26px;border-radius:99px;margin:6px 0;display:flex;align-items:center;padding:0 10px;color:#fff;font-size:15px;white-space:nowrap}
+/* משחק */
+.prog{display:flex;gap:6px;justify-content:center;margin:4px 0 10px}
+.prog i{width:14px;height:14px;border-radius:50%;background:#0001}
+.prog i.ok{background:#06B38A}.prog i.cur{background:#FFB703}
+.q{font-size:26px;text-align:center;line-height:1.5;min-height:80px;display:flex;align-items:center;justify-content:center;gap:10px}
+.q .say{font-size:28px;background:#fff;border-radius:50%;width:52px;height:52px;flex:none;box-shadow:0 3px 0 #0001}
+.qpic{text-align:center;font-size:54px;margin:-4px 0 6px}
+.opts{display:grid;gap:10px;grid-template-columns:1fr}
+.opts.two{grid-template-columns:1fr 1fr}
+.opt{background:#fff;border-radius:22px;padding:14px;font-size:24px;box-shadow:0 5px 0 #0000001a;display:flex;align-items:center;justify-content:center;gap:10px;min-height:72px;color:var(--ink)}
+.opt .e{font-size:36px}
+.opt.good{background:#06B38A;color:#fff}
+.opt.bad{background:#FFD6D6;animation:shake .4s}
+.opt.done{opacity:.35;pointer-events:none}
+.opt .num{background:#2B2D42;color:#fff;border-radius:50%;width:30px;height:30px;font-size:17px;display:inline-flex;align-items:center;justify-content:center}
+@keyframes shake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.win{text-align:center}
+.win .e{font-size:90px;animation:bounce 1s infinite alternate}
+@keyframes bounce{to{transform:translateY(-12px)}}
+.conf{position:fixed;top:-40px;font-size:30px;pointer-events:none;animation:fall linear forwards;z-index:9}
+@keyframes fall{to{transform:translateY(110vh) rotate(540deg)}}
+/* הגדרות */
+.modal{position:fixed;inset:0;background:#0007;display:none;align-items:center;justify-content:center;z-index:20;padding:16px}
+.modal.on{display:flex}
+.modal .card{width:100%;max-width:420px}
+.modal label{display:block;font-size:17px;margin:12px 0 4px}
+.modal input,.modal select{width:100%;font:inherit;font-size:19px;padding:10px;border-radius:14px;border:2px solid #0002;background:#fff;color:var(--ink)}
+.seg{display:flex;gap:8px}.seg button{flex:1;padding:10px;border-radius:14px;background:#F1F1F1;font-size:18px;color:var(--ink)}
+.seg button.sel{background:#3A86FF;color:#fff}
+.nudge{background:#FFF3D6;border-radius:16px;padding:10px;text-align:center;font-size:16px;margin-top:8px}
+.nudge button{background:#3A86FF;color:#fff;border-radius:99px;padding:6px 14px;font-size:16px;margin-top:6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <button class="iconbtn" id="homeBtn" aria-label="בית">🏠</button>
+    <h1>⏰ הזמן שלי</h1>
+    <div style="display:flex;gap:8px;align-items:center">
+      <div class="stars" id="stars">⭐ 0</div>
+      <button class="iconbtn" id="setBtn" aria-label="הגדרות">⚙️</button>
+    </div>
+  </header>
+
+  <!-- ===== בית ===== -->
+  <section class="screen on" id="home">
+    <div class="card today say" id="todayCard"></div>
+    <div class="tiles">
+      <button class="tile wide" style="background:var(--pizza)" data-go="pizza"><span class="e">🍕</span><span>פיצת הגיל שלי</span></button>
+      <button class="tile" style="background:var(--day)" data-go="day"><span class="e">☀️</span>יום</button>
+      <button class="tile" style="background:var(--week)" data-go="week"><span class="e">🚂</span>שבוע</button>
+      <button class="tile" style="background:var(--month)" data-go="month"><span class="e">🌙</span>חודש</button>
+      <button class="tile" style="background:var(--year)" data-go="year"><span class="e">🎂</span>שנה</button>
+      <button class="tile wide" style="background:var(--cmp)" data-go="cmp"><span class="e">🪜</span><span>מה יותר ארוך?</span></button>
+      <button class="tile wide" style="background:#2B2D42" data-play="all"><span class="e">🎲</span><span>חידון הכול</span></button>
+    </div>
+    <p class="hint" style="margin-top:14px">🔊 לוחצים על כל דבר — והוא מדבר</p>
+  </section>
+
+  <!-- ===== עולם (לימוד) ===== -->
+  <section class="screen" id="world"><div id="worldBody"></div></section>
+
+  <!-- ===== משחק ===== -->
+  <section class="screen" id="game">
+    <div class="prog" id="prog"></div>
+    <div class="card"><div class="q" id="qText"></div><div class="qpic" id="qPic"></div></div>
+    <div class="opts" id="opts"></div>
+  </section>
+
+  <!-- ===== ניצחון ===== -->
+  <section class="screen" id="winScr">
+    <div class="card win">
+      <div class="e">🏆</div>
+      <h2 id="winTitle">כל הכבוד!</h2>
+      <p class="lead" id="winText"></p>
+      <button class="big" style="background:var(--cmp)" id="againBtn">🔁 עוד פעם</button>
+      <button class="big" style="background:var(--year)" data-go="home">🏠 הביתה</button>
+    </div>
+  </section>
+</div>
+
+<!-- ===== הגדרות (להורה) ===== -->
+<div class="modal" id="setModal">
+  <div class="card">
+    <h2>⚙️ הגדרות להורה</h2>
+    <label>שם הילד/ה</label>
+    <input id="sName" placeholder="למשל: לביא">
+    <label>בן או בת?</label>
+    <div class="seg" id="sGender"><button data-g="m">בן 👦</button><button data-g="f">בת 👧</button></div>
+    <label>תאריך לידה (בשביל פיצת הגיל 🍕)</label>
+    <input id="sBirth" type="date">
+    <button class="big" style="background:var(--cmp)" id="saveSet">שמירה ✔️</button>
+    <button class="big" style="background:#999" id="closeSet">סגירה</button>
+  </div>
+</div>
+
+<script>
+/* =====================================================
+   הזמן שלי — משחק לימוד: יום, שבוע, חודש, שנה
+   כל הנתונים נשמרים רק במכשיר הזה (localStorage)
+   ===================================================== */
+const DAYS=['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
+const DAY_COL=['#E63946','#FB5607','#FFB703','#06B38A','#3A86FF','#8338EC','#2B2D42'];
+const MONTHS=['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
+const MON_E=['☔','🌂','🌸','🌷','🌼','🏖️','🍉','🌞','🍎','🍂','🍁','⛄'];
+const SEASON_OF=[0,0,1,1,1,2,2,2,3,3,3,0]; // 0 חורף 1 אביב 2 קיץ 3 סתיו
+const SEASONS=[{n:'חורף',e:'❄️',c:'#3A86FF',t:'קר, יורד גשם, לובשים מעיל'},{n:'אביב',e:'🌸',c:'#06B38A',t:'פרחים פורחים, נעים בחוץ'},{n:'קיץ',e:'☀️',c:'#FFB703',t:'חם מאוד, הולכים לים ולבריכה'},{n:'סתיו',e:'🍂',c:'#FB5607',t:'עלים נושרים, מתחיל להתקרר'}];
+const SLICE_COL=['#E63946','#FB5607','#FFB703','#8AC926','#06B38A','#1982C4','#3A86FF','#6A4C93','#8338EC','#FF006E','#F15BB5','#FF924C'];
+
+/* ---------- מצב ---------- */
+const store={get(k,d){try{const v=localStorage.getItem('zman_'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('zman_'+k,JSON.stringify(v))}catch(e){}}};
+let S={stars:store.get('stars',0),name:store.get('name',''),g:store.get('g','m'),birth:store.get('birth','')};
+const G=(m,f)=>S.g==='f'?f:m;
+const NOW=new Date();
+const TD=NOW.getDay(), TM=NOW.getMonth(), TY=NOW.getFullYear(), TDATE=NOW.getDate();
+
+/* גיל: שנים + חודשים מאז יום ההולדת האחרון */
+function ageInfo(){
+  if(!S.birth) return {y:5,m:2,set:false};
+  const b=new Date(S.birth+'T00:00:00');
+  let m=(TY-b.getFullYear())*12+(TM-b.getMonth());
+  if(TDATE<b.getDate()) m--;
+  if(m<0)m=0;
+  return {y:Math.floor(m/12),m:m%12,set:true,bm:b.getMonth()};
+}
+const numWord=n=>['אפס','אחד','שניים','שלושה','ארבעה','חמישה','שישה','שבעה','שמונה','תשעה','עשרה','אחד עשר','שנים עשר'][n]??String(n);
+const yearsTxt=y=>y===1?'שנה אחת':y===2?'שנתיים':y+' שנים';
+const monthsTxt=m=>m===0?'אפס חודשים':m===1?'חודש אחד':m===2?'חודשיים':m+' חודשים';
+
+/* ---------- קול ---------- */
+let heVoice=null;
+function loadV(){try{heVoice=speechSynthesis.getVoices().find(v=>/^he|^iw/i.test(v.lang))||null}catch(e){}}
+if('speechSynthesis' in window){loadV();speechSynthesis.onvoiceschanged=loadV}
+function say(t,cb){
+  if(!('speechSynthesis' in window)){cb&&cb();return}
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(t.replace(/[^֐-׿0-9 ,.?!:\-]/g,' '));
+  u.lang='he-IL';if(heVoice)u.voice=heVoice;u.rate=.88;u.pitch=1.1;
+  if(cb)u.onend=cb;
+  speechSynthesis.speak(u);
+}
+let AC=null;
+function tone(fs,dur=.12){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();fs.forEach((f,i)=>{const o=AC.createOscillator(),g=AC.createGain();o.type='triangle';o.frequency.value=f;o.connect(g);g.connect(AC.destination);const t=AC.currentTime+i*dur;g.gain.setValueAtTime(.18,t);g.gain.exponentialRampToValueAtTime(.001,t+dur*1.6);o.start(t);o.stop(t+dur*1.7)})}catch(e){}}
+const ding=()=>tone([660,880,1100]), boop=()=>tone([300,220],.15);
+
+/* כל אלמנט עם data-say מדבר בלחיצה */
+document.addEventListener('click',e=>{
+  const s=e.target.closest('[data-say]');if(s){say(s.dataset.say);s.animate([{transform:'scale(1)'},{transform:'scale(1.08)'},{transform:'scale(1)'}],{duration:300})}
+  const go=e.target.closest('[data-go]');if(go){openWorld(go.dataset.go)}
+  const pl=e.target.closest('[data-play]');if(pl){startGame(pl.dataset.play)}
+});
+
+/* ---------- ניווט ---------- */
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));scrollTo(0,0)}
+document.getElementById('homeBtn').onclick=()=>{speechSynthesis&&speechSynthesis.cancel();renderHome();show('home')};
+function addStars(n){S.stars+=n;store.set('stars',S.stars);document.getElementById('stars').textContent='⭐ '+S.stars}
+addStars(0);
+
+function renderHome(){
+  const hi=S.name?`שלום ${S.name}! 👋<br>`:'';
+  const txt=`היום יום ${DAYS[TD]}, ${TDATE} ב${MONTHS[TM]}, שנת ${TY}. עונת ה${SEASONS[SEASON_OF[TM]].n}.`;
+  const el=document.getElementById('todayCard');
+  el.dataset.say=(S.name?'שלום '+S.name+'! ':'')+txt;
+  el.innerHTML=`${hi}היום <b>יום ${DAYS[TD]}</b> 🔊<br>${TDATE} ב${MONTHS[TM]} ${MON_E[TM]} · ${TY}<br><span style="font-size:18px">עונה: ${SEASONS[SEASON_OF[TM]].n} ${SEASONS[SEASON_OF[TM]].e}</span>`;
+}
+renderHome();
+
+/* ---------- ציור פיצה (SVG) ----------
+   filled = כמה משולשים צבועים; labels = טקסט לכל משולש */
+function pizzaSVG(filled,{labels=null,id='',size=300,mini=false,hi=-1}={}){
+  const c=size/2,r=size/2-(mini?2:8);let s=`<svg viewBox="0 0 ${size} ${size}" ${id?`id="${id}"`:''}>`;
+  s+=`<circle cx="${c}" cy="${c}" r="${r}" fill="#F6E3B4" stroke="#D49A4A" stroke-width="${mini?3:8}"/>`;
+  for(let i=0;i<12;i++){
+    const a1=(i*30-90)*Math.PI/180,a2=((i+1)*30-90)*Math.PI/180,rr=r-(mini?2:5);
+    // בכיוון השעון מלמעלה
+    const x1=c+rr*Math.cos(a1),y1=c+rr*Math.sin(a1),x2=c+rr*Math.cos(a2),y2=c+rr*Math.sin(a2);
+    const on=i<filled, col=on?SLICE_COL[i]:'#FBF0D2';
+    const am=(i*30+15-90)*Math.PI/180;
+    s+=`<g class="slice${i===hi?' pulse':''}" data-i="${i}" style="transform-origin:${c}px ${c}px">`;
+    s+=`<path d="M${c},${c} L${x1},${y1} A${rr},${rr} 0 0 1 ${x2},${y2} Z" fill="${col}" stroke="#fff" stroke-width="${mini?1.5:3}"/>`;
+    if(on&&!mini){[.45,.72].forEach((k,j)=>{const aa=am+(j?.12:-.1);s+=`<circle cx="${c+rr*k*Math.cos(aa)}" cy="${c+rr*k*Math.sin(aa)}" r="${size*.022}" fill="#fff" opacity=".55"/>`})}
+    if(labels&&!mini){const lx=c+rr*.8*Math.cos(am),ly=c+rr*.8*Math.sin(am);s+=`<text x="${lx}" y="${ly}" font-size="${size*.065}" text-anchor="middle" dominant-baseline="central" fill="${on?'#fff':'#B08A4A'}" font-family="Varela Round,sans-serif" font-weight="bold">${labels[i]}</text>`}
+    s+='</g>';
+  }
+  s+=`<circle cx="${c}" cy="${c}" r="${mini?3:7}" fill="#D49A4A"/></svg>`;
+  return s;
+}
+
+/* ---------- העולמות ---------- */
+function backBtn(){return `<button class="back" data-go="home">→ חזרה</button>`}
+function playBtn(key,col){return `<button class="big" style="background:${col}" data-play="${key}">🎮 בוא${G('','י')} נשחק!</button>`}
+
+const WORLDS={
+/* ===== פיצת הגיל ===== */
+pizza(){
+  const a=ageInfo(), left=12-a.m;
+  const nm=S.name||G('אתה','את');
+  const yrs=Array.from({length:a.y},(_,i)=>`<span data-say="שנה ${i+1}! פיצה שלמה">${pizzaSVG(12,{mini:true,size:60})}</span>`).join('');
+  return `${backBtn()}<h2>🍕 פיצת הגיל שלי</h2>
+  <div class="card"><p class="lead say" data-say="כל פיצה שלמה היא שנה אחת. יש בה שנים עשר משולשים, כי בשנה יש שנים עשר חודשים.">כל <b>פיצה שלמה</b> = <b>שנה</b> 🍕<br>יש בה <b>12 משולשים</b> = 12 חודשים 🔊</p></div>
+  <div class="card pizzaBox">
+    <p class="lead say" data-say="${G('אתה בן','את בת')} ${yearsTxt(a.y)} ו${monthsTxt(a.m)}">${S.name?S.name+' ':''}${G('בן','בת')} <span class="bignum">${a.y}</span> שנים ו-<span class="bignum">${a.m}</span> חודשים 🔊</p>
+    <p class="hint">${a.y} פיצות שלמות — אחת לכל שנה:</p>
+    <div class="years">${yrs}</div>
+    <p class="hint">והפיצה של השנה הזאת — כל משולש צבוע הוא חודש שכבר עבר מאז יום ההולדת:</p>
+    <div id="agePizza">${pizzaSVG(a.m,{labels:[1,2,3,4,5,6,7,8,9,10,11,'🎂']})}</div>
+    <div class="legend"><span><i style="background:#E63946"></i>חודש שעבר</span><span><i style="background:#FBF0D2;border:1px solid #D49A4A"></i>עוד לא</span></div>
+    <button class="big" style="background:var(--pizza)" id="countSlices">👆 בוא${G('','י')} נספור יחד</button>
+    <p class="lead say" data-say="עוד ${monthsTxt(left)} ליום ההולדת! כשכל הפיצה תהיה צבועה, ${G('תהיה בן','תהיי בת')} ${a.y+1}">🎂 עוד <b>${left}</b> משולשים ליום ההולדת!<br>כשכל הפיצה צבועה — ${G('תהיה בן','תהיי בת')} <b>${a.y+1}</b> 🔊</p>
+    ${a.set?'':`<div class="nudge">כרגע זו דוגמה (5 שנים וחודשיים).<br><button onclick="openSet()">⚙️ להורה: הכניסו תאריך לידה</button></div>`}
+  </div>
+  <div class="card pizzaBox">
+    <h2 style="font-size:22px">📅 פיצת השנה ${TY}</h2>
+    <p class="lead say" data-say="גם השנה היא פיצה. היא מתחילה בינואר. עכשיו ${MONTHS[TM]}, אז כבר עברו ${monthsTxt(TM)} והחודש ה${numWord(TM+1)} עכשיו.">השנה מתחילה בינואר ☔<br>עכשיו <b>${MONTHS[TM]}</b> — המשולש ה-${TM+1} 🔊</p>
+    <div id="yearPizza">${pizzaSVG(TM+1,{labels:MON_E,hi:TM})}</div>
+    <p class="hint">לחצו על משולש לשמוע איזה חודש זה</p>
+  </div>
+  ${playBtn('pizza','var(--pizza)')}`;
+},
+/* ===== יום ===== */
+day(){
+  const parts=[['🌅','בוקר','מתעוררים ואוכלים ארוחת בוקר'],['☀️','צהריים','בגן, משחקים עם חברים'],['🌇','ערב','מקלחת וארוחת ערב'],['🌙','לילה','ישנים במיטה וחולמים']];
+  return `${backBtn()}<h2>☀️ מה זה יום?</h2>
+  <div class="card"><p class="lead say" data-say="יום זה מהבוקר, כשהשמש זורחת, ועד הלילה, כשהולכים לישון. כשמתעוררים — מתחיל יום חדש!">יום = מהבוקר ☀️ ועד הלילה 🌙<br>כשמתעוררים — מתחיל <b>יום חדש!</b> 🔊</p></div>
+  <div class="row4">${parts.map(p=>`<div class="mini say" data-say="${p[1]}. ${p[2]}"><span class="e">${p[0]}</span><b>${p[1]}</b><small>${p[2]}</small></div>`).join('')}</div>
+  <div class="card" style="margin-top:14px"><h2 style="font-size:22px">אתמול · היום · מחר</h2>
+  <div class="row4" style="grid-template-columns:repeat(3,1fr)">
+   <div class="mini say" data-say="אתמול היה יום ${DAYS[(TD+6)%7]}. אתמול זה כבר עבר."><span class="e">⬅️</span><b>אתמול</b><small>${DAYS[(TD+6)%7]}</small></div>
+   <div class="mini say" style="background:#FFB703;color:#fff" data-say="היום יום ${DAYS[TD]}"><span class="e">⭐</span><b>היום</b><small style="opacity:1">${DAYS[TD]}</small></div>
+   <div class="mini say" data-say="מחר יהיה יום ${DAYS[(TD+1)%7]}. מחר זה אחרי שנישן."><span class="e">➡️</span><b>מחר</b><small>${DAYS[(TD+1)%7]}</small></div>
+  </div></div>
+  ${playBtn('day','var(--day)')}`;
+},
+/* ===== שבוע ===== */
+week(){
+  return `${backBtn()}<h2>🚂 רכבת השבוע</h2>
+  <div class="card"><p class="lead say" data-say="שבוע זה שבעה ימים. כמו רכבת עם שבעה קרונות. אחרי שבת — מתחיל שבוע חדש ביום ראשון!">שבוע = <b>7 ימים</b> 🚂<br>7 קרונות ברכבת. אחרי שבת — מתחילים שוב! 🔊</p>
+  <div class="train">${DAYS.map((d,i)=>`<div class="car say ${i===TD?'today':''}" id="car${i}" style="background:${DAY_COL[i]}" data-say="יום ${d}${i===6?'. שבת! מדליקים נרות ונחים':''}${i===TD?'. זה היום!':''}"><span class="n">${i===6?'🕯️':i+1}</span>${d}${i===TD?'<br><span class="tag">היום</span>':''}</div>`).join('')}</div></div>
+  <button class="big" style="background:var(--week)" id="sing">🎵 שירת הימים</button>
+  ${playBtn('week','var(--week)')}`;
+},
+/* ===== חודש ===== */
+month(){
+  const first=new Date(TY,TM,1).getDay(), dim=new Date(TY,TM+1,0).getDate();
+  let cal=['א','ב','ג','ד','ה','ו','ש'].map(h=>`<div class="h">${h}</div>`).join('');
+  for(let i=0;i<first;i++)cal+='<div></div>';
+  for(let d=1;d<=dim;d++)cal+=`<div class="d say ${d<TDATE?'past':d===TDATE?'now':''}" data-say="${d} ב${MONTHS[TM]}${d===TDATE?'. זה היום!':d<TDATE?'. היום הזה כבר עבר':''}">${d}</div>`;
+  return `${backBtn()}<h2>🌙 מה זה חודש?</h2>
+  <div class="card"><p class="lead say" data-say="חודש זה בערך ארבעה שבועות. בערך שלושים ימים. בשנה יש שנים עשר חודשים.">חודש = בערך <b>4 שבועות</b> 🚂🚂🚂🚂<br>בערך <b>30 ימים</b> 🔊</p></div>
+  <div class="card"><h2 style="font-size:22px">${MONTHS[TM]} ${MON_E[TM]}</h2><div class="cal">${cal}</div>
+  <div class="legend"><span><i style="background:#8338EC"></i>ימים שעברו</span><span><i style="background:#FB5607"></i>היום</span></div></div>
+  <div class="card"><h2 style="font-size:22px">12 החודשים</h2><div class="months">${MONTHS.map((m,i)=>`<div class="mo say ${i===TM?'cur':''}" data-say="${m}. החודש ה${numWord(i+1)}${i===TM?'. זה החודש שלנו עכשיו!':''}"><span class="e">${MON_E[i]}</span>${m}</div>`).join('')}</div></div>
+  ${playBtn('month','var(--month)')}`;
+},
+/* ===== שנה ===== */
+year(){
+  const a=ageInfo();
+  const candles=Array.from({length:a.y},(_,i)=>`<span data-n="${i+1}">🕯️</span>`).join('');
+  return `${backBtn()}<h2>🎂 מה זה שנה?</h2>
+  <div class="card"><p class="lead say" data-say="שנה זה שנים עשר חודשים. ארבע עונות: חורף, אביב, קיץ וסתיו. ופעם אחת בשנה יש לך יום הולדת!">שנה = <b>12 חודשים</b> 🌙×12<br>4 עונות, ו<b>יום הולדת אחד</b> 🎉 🔊</p></div>
+  <div class="seasons">${SEASONS.map((s,i)=>`<div class="mini say" style="background:${s.c};color:#fff" data-say="${s.n}. ${s.t}"><span class="e">${s.e}</span><b>${s.n}</b><small style="opacity:.95">${s.t}</small></div>`).join('')}</div>
+  <div class="card" style="margin-top:14px;text-align:center"><h2 style="font-size:22px">🎂 העוגה שלי</h2>
+  <p class="lead">כל נר = שנה אחת. לחצו לספור!</p><div class="cake" id="cake">${candles}</div><div style="font-size:60px">🎂</div>
+  <p class="lead say" data-say="${G('אתה בן','את בת')} ${yearsTxt(a.y)}. בשנה הבאה ${G('תהיה בן','תהיי בת')} ${a.y+1}!">${G('אני בן','אני בת')} <b>${a.y}</b> · בשנה הבאה <b>${a.y+1}</b>! 🔊</p></div>
+  <button class="big" style="background:var(--pizza)" data-go="pizza">🍕 לפיצת הגיל</button>
+  ${playBtn('year','var(--year)')}`;
+},
+/* ===== השוואה ===== */
+cmp(){
+  const rep=(e,n)=>e.repeat(n);
+  return `${backBtn()}<h2>🪜 מה יותר ארוך?</h2>
+  <div class="card ladder">
+   <div class="step say" data-say="יום אחד"><span class="e">☀️</span><span class="eq">☀️ = <b>יום</b></span></div>
+   <div class="step say" data-say="שבעה ימים זה שבוע"><span class="e">🚂</span><span class="eq">${rep('☀️',7)} = <b>שבוע</b></span></div>
+   <div class="step say" data-say="ארבעה שבועות זה חודש"><span class="e">🌙</span><span class="eq">${rep('🚂',4)} = <b>חודש</b></span></div>
+   <div class="step say" data-say="שנים עשר חודשים זה שנה"><span class="e">🎂</span><span class="eq">${rep('🌙',12)} = <b>שנה</b></span></div>
+  </div>
+  <div class="card"><p class="lead say" data-say="יום הכי קצר. אחריו שבוע, אחריו חודש, והכי ארוך — שנה!">מהקצר לארוך 🔊</p>
+   <div class="bar" style="width:12%;background:var(--day)">☀️</div>
+   <div class="bar" style="width:28%;background:var(--week)">🚂 שבוע</div>
+   <div class="bar" style="width:55%;background:var(--month)">🌙 חודש</div>
+   <div class="bar" style="width:100%;background:var(--year)">🎂 שנה — הכי ארוך!</div>
+  </div>
+  ${playBtn('cmp','var(--cmp)')}`;
+}};
+
+function openWorld(k){
+  if(k==='home'){renderHome();show('home');return}
+  document.getElementById('worldBody').innerHTML=WORLDS[k]();
+  show('world');
+  // חיבורים מיוחדים
+  const sing=document.getElementById('sing');
+  if(sing)sing.onclick=()=>{let i=0;const next=()=>{document.querySelectorAll('.car').forEach(c=>c.classList.remove('lit'));if(i>6){say('שבעה ימים בשבוע!');return}const c=document.getElementById('car'+i);c.classList.add('lit');tone([400+i*60]);say('יום '+DAYS[i]);i++;setTimeout(next,1100)};next()};
+  document.querySelectorAll('#yearPizza .slice').forEach(g=>g.onclick=()=>{const i=+g.dataset.i;say(MONTHS[i]+'. החודש ה'+numWord(i+1)+(i<TM?'. כבר עבר':i===TM?'. אנחנו עכשיו פה!':'. עוד לא הגיע'))});
+  document.querySelectorAll('#agePizza .slice').forEach(g=>g.onclick=()=>{const i=+g.dataset.i,a=ageInfo();say(i<a.m?'חודש '+(i+1)+'. כבר עבר!':i===11?'המשולש האחרון, ואז יום הולדת!':'חודש '+(i+1)+'. עוד לא עבר')});
+  const cnt=document.getElementById('countSlices');
+  if(cnt)cnt.onclick=()=>{const a=ageInfo();let i=0;const box=document.getElementById('agePizza');const step=()=>{if(i>a.m){say(`${monthsTxt(a.m)} כבר עברו! עוד ${monthsTxt(12-a.m)} ליום ההולדת`);box.innerHTML=pizzaSVG(a.m,{labels:[1,2,3,4,5,6,7,8,9,10,11,'🎂']});openWorldRebind();return}box.innerHTML=pizzaSVG(i,{labels:[1,2,3,4,5,6,7,8,9,10,11,'🎂'],hi:i-1});if(i>0){tone([400+i*50]);say(numWord(i))}i++;setTimeout(step,i===1?300:900)};step()};
+  document.querySelectorAll('#cake span').forEach(s=>s.onclick=()=>{s.textContent='🔥';tone([500+s.dataset.n*60]);say(numWord(+s.dataset.n))});
+}
+function openWorldRebind(){document.querySelectorAll('#agePizza .slice').forEach(g=>g.onclick=()=>{const i=+g.dataset.i,a=ageInfo();say(i<a.m?'חודש '+(i+1)+'. כבר עבר!':'חודש '+(i+1)+'. עוד לא עבר')})}
+
+/* ---------- מחולל שאלות ---------- */
+const rnd=n=>Math.floor(Math.random()*n), pick=a=>a[rnd(a.length)];
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=rnd(i+1);[a[i],a[j]]=[a[j],a[i]]}return a};
+// שאלת בחירה: good = התשובה הנכונה, bad = תשובות שגויות. כל תשובה [טקסט, אימוג'י]
+function Q(text,good,bad,pic=''){const opts=shuffle([good,...bad]);return {type:'choice',text,pic,opts,ans:opts.indexOf(good)}}
+function ORDER(text,items){return {type:'order',text,items}}
+const U=[['יום','☀️'],['שבוע','🚂'],['חודש','🌙'],['שנה','🎂']];
+
+const QS={
+ day:[
+  ()=>Q('מתי ישנים במיטה?',['לילה','🌙'],[['בוקר','🌅'],['צהריים','☀️']]),
+  ()=>Q('מתי אוכלים ארוחת בוקר?',['בוקר','🌅'],[['לילה','🌙'],['ערב','🌇']]),
+  ()=>Q('מתי השמש זורחת והשמיים מתבהרים?',['בוקר','🌅'],[['לילה','🌙'],['ערב','🌇']]),
+  ()=>Q('מתי רואים ירח וכוכבים?',['לילה','🌙'],[['צהריים','☀️'],['בוקר','🌅']]),
+  ()=>Q(`היום יום ${DAYS[TD]}. איזה יום יהיה מחר?`,[DAYS[(TD+1)%7],'➡️'],[[DAYS[(TD+6)%7],'⬅️'],[DAYS[(TD+3)%7],'❓']]),
+  ()=>Q('מה בא קודם?',['בוקר','🌅'],[['לילה','🌙']]),
+  ()=>ORDER('סדר את היום: מה קודם? לחצו לפי הסדר',[['בוקר','🌅'],['צהריים','☀️'],['ערב','🌇'],['לילה','🌙']]),
+ ],
+ week:[
+  ()=>Q('כמה ימים יש בשבוע?',['7','🚂'],[['5','✋'],['10','🔟']]),
+  ()=>{const i=rnd(6);return Q(`איזה יום בא אחרי יום ${DAYS[i]}?`,[DAYS[i+1],''],shuffle(DAYS.filter((_,j)=>j!==i+1&&j!==i)).slice(0,2).map(d=>[d,'']),'🚂')},
+  ()=>{const i=1+rnd(6);return Q(`איזה יום בא לפני יום ${DAYS[i]}?`,[DAYS[i-1],''],shuffle(DAYS.filter((_,j)=>j!==i-1&&j!==i)).slice(0,2).map(d=>[d,'']),'🚂')},
+  ()=>Q('באיזה יום מדליקים נרות ונחים?',['שבת','🕯️'],[['שלישי',''],['ראשון','']]),
+  ()=>Q('מה היום?',[DAYS[TD],'⭐'],shuffle(DAYS.filter((_,j)=>j!==TD)).slice(0,2).map(d=>[d,''])),
+  ()=>Q('אחרי שבת מתחיל שבוע חדש. באיזה יום?',['ראשון','1️⃣'],[['שני',''],['שישי','']]),
+  ()=>ORDER('סדר את הקרונות: ראשון, שני, שלישי...',[['ראשון','1️⃣'],['שני','2️⃣'],['שלישי','3️⃣'],['רביעי','4️⃣']].map(x=>[x[0],''])),
+ ],
+ month:[
+  ()=>Q('כמה שבועות יש בערך בחודש?',['4','🚂🚂🚂🚂'],[['1','🚂'],['12','']]),
+  ()=>Q('באיזה חודש אנחנו עכשיו?',[MONTHS[TM],MON_E[TM]],shuffle(MONTHS.map((m,i)=>[m,MON_E[i]]).filter((_,i)=>i!==TM)).slice(0,2)),
+  ()=>{const i=rnd(11);return Q(`איזה חודש בא אחרי ${MONTHS[i]}?`,[MONTHS[i+1],MON_E[i+1]],shuffle(MONTHS.map((m,j)=>[m,MON_E[j]]).filter((_,j)=>j!==i+1&&j!==i)).slice(0,2))},
+  ()=>Q('באיזה חודש השנה מתחילה?',['ינואר','☔'],[['יולי','🍉'],['מאי','🌼']]),
+  ()=>Q('בחודש יש בערך...',['30 ימים','📅'],[['7 ימים','🚂'],['2 ימים','✌️']]),
+ ],
+ year:[
+  ()=>Q('כמה חודשים יש בשנה?',['12','🍕'],[['4',''],['7','']]),
+  ()=>Q('כמה פעמים בשנה יש יום הולדת?',['פעם אחת','🎂'],[['7 פעמים',''],['כל יום','']]),
+  ()=>{const a=ageInfo();return Q(`${G('אתה בן','את בת')} ${a.y}. בן כמה ${G('תהיה','תהיי')} בשנה הבאה?`.replace('בן כמה',G('בן כמה','בת כמה')),[String(a.y+1),'🎉'],[[String(a.y),''],[String(a.y+3),'']],'🎂')},
+  ()=>Q('באיזו עונה קר ויורד גשם?',['חורף','❄️'],[['קיץ','☀️'],['אביב','🌸']]),
+  ()=>Q('באיזו עונה חם והולכים לים?',['קיץ','☀️'],[['חורף','❄️'],['סתיו','🍂']]),
+  ()=>Q('באיזו עונה פורחים פרחים?',['אביב','🌸'],[['חורף','❄️'],['סתיו','🍂']]),
+  ()=>Q('באיזו עונה נושרים העלים?',['סתיו','🍂'],[['קיץ','☀️'],['אביב','🌸']]),
+  ()=>Q('כמה עונות יש בשנה?',['4','❄️🌸☀️🍂'],[['2',''],['10','']]),
+ ],
+ pizza:[
+  ()=>Q('כמה משולשים יש בפיצת השנה?',['12','🍕'],[['7',''],['4','']]),
+  ()=>Q('פיצה שלמה אחת זה...',['שנה','🎂'],[['יום','☀️'],['שבוע','🚂']]),
+  ()=>Q('משולש אחד בפיצה זה...',['חודש','🌙'],[['שנה','🎂'],['יום','☀️']]),
+  ()=>{const a=ageInfo();return Q('כמה משולשים צבועים בפיצה שלך?',[String(a.m),'🍕'],[[String((a.m+3)%12),''],[String((a.m+7)%12),'']])},
+  ()=>{const a=ageInfo();return Q('כמה פיצות שלמות יש לך?',[String(a.y),'🍕'],[[String(a.y+2),''],[String(Math.max(1,a.y-2)===a.y?a.y+1:Math.max(1,a.y-2)),'']])},
+  ()=>{const a=ageInfo(),l=12-a.m;return Q('כמה משולשים עוד חסרים עד יום ההולדת?',[String(l),'🎂'],[[String(l===1?3:l-1),''],[String(l+2),'']])},
+ ],
+ cmp:[
+  ()=>{const [i,j]=shuffle([0,1,2,3]).slice(0,2);const L=Math.max(i,j),Sm=Math.min(i,j);return Q('מה יותר ארוך?',U[L],[U[Sm]])},
+  ()=>{const [i,j]=shuffle([0,1,2,3]).slice(0,2);const L=Math.max(i,j),Sm=Math.min(i,j);return Q('מה יותר קצר?',U[Sm],[U[L]])},
+  ()=>Q('מה הכי ארוך?',U[3],[U[0],U[1],U[2]]),
+  ()=>Q('מה הכי קצר?',U[0],[U[1],U[2],U[3]]),
+  ()=>Q('7 ימים ביחד זה...',U[1],[U[2],U[3]]),
+  ()=>Q('12 חודשים ביחד זה...',U[3],[U[1],U[0]]),
+  ()=>ORDER('סדר מהקצר לארוך!',U),
+ ]
+};
+
+/* ---------- מנוע המשחק ---------- */
+const COLORS={day:'var(--day)',week:'var(--week)',month:'var(--month)',year:'var(--year)',cmp:'var(--cmp)',pizza:'var(--pizza)',all:'#2B2D42'};
+let GM=null;
+function startGame(key){
+  const pool=key==='all'?Object.values(QS).flat():QS[key];
+  const qs=[],seen=new Set();let guard=0;
+  while(qs.length<5&&guard++<200){const q=pick(pool)();if(!seen.has(q.text)){seen.add(q.text);qs.push(q)}}
+  GM={key,qs,i:0,tries:0,score:0};
+  show('game');renderQ();
+}
+function renderQ(){
+  const q=GM.qs[GM.i];GM.tries=0;GM.step=0;
+  document.getElementById('prog').innerHTML=GM.qs.map((_,k)=>`<i class="${k<GM.i?'ok':k===GM.i?'cur':''}"></i>`).join('');
+  document.getElementById('qText').innerHTML=`<button class="say" data-say="${q.text}">🔊</button><span>${q.text}</span>`;
+  document.getElementById('qPic').textContent=q.pic||'';
+  const box=document.getElementById('opts');
+  const opts=q.type==='order'?shuffle(q.items):q.opts;
+  box.className='opts'+(opts.length===2||opts.length===4?' two':'');
+  box.innerHTML=opts.map((o,k)=>`<button class="opt" data-k="${k}">${o[1]?`<span class="e">${o[1]}</span>`:''}<span>${o[0]}</span></button>`).join('');
+  box.querySelectorAll('.opt').forEach(b=>b.onclick=()=>answer(b,opts[+b.dataset.k]));
+  say(q.text);
+}
+function answer(btn,o){
+  const q=GM.qs[GM.i];
+  if(q.type==='order'){
+    if(o[0]===q.items[GM.step][0]){GM.step++;btn.classList.add('good','done');btn.insertAdjacentHTML('afterbegin',`<span class="num">${GM.step}</span>`);tone([500+GM.step*100]);say(o[0]);if(GM.step===q.items.length)correct()}
+    else{GM.tries++;wrong(btn)}
+    return;
+  }
+  if(q.opts.indexOf(o)===q.ans){btn.classList.add('good');correct()}else{GM.tries++;wrong(btn)}
+}
+const PRAISE=['כל הכבוד!','מעולה!','וואו, נכון!','יופי!','אלוף!'];
+function correct(){
+  ding();if(GM.tries===0)GM.score++;
+  document.querySelectorAll('.opt').forEach(b=>b.style.pointerEvents='none');
+  setTimeout(()=>say(pick(PRAISE)),350);
+  setTimeout(()=>{GM.i++;GM.i<GM.qs.length?renderQ():finish()},1600);
+}
+function wrong(btn){boop();btn.classList.remove('bad');void btn.offsetWidth;btn.classList.add('bad');say(G('נסה','נסי')+' שוב')}
+function finish(){
+  const earned=GM.score+1;addStars(earned);
+  document.getElementById('winTitle').textContent=(S.name?S.name+', ':'')+'כל הכבוד! 🎉';
+  document.getElementById('winText').innerHTML=`${G('ענית','ענית')} על כל השאלות!<br>${G('קיבלת','קיבלת')} <b>${earned}</b> כוכבים ⭐`;
+  document.getElementById('againBtn').onclick=()=>startGame(GM.key);
+  show('winScr');confetti();say(`כל הכבוד${S.name?' '+S.name:''}! ${G('קיבלת','קיבלת')} ${earned} כוכבים`);
+}
+function confetti(){const e=['⭐','🎉','🍕','🎈','✨','🌙','☀️'];for(let i=0;i<30;i++){const d=document.createElement('div');d.className='conf';d.textContent=pick(e);d.style.left=rnd(100)+'vw';d.style.animationDuration=(2+Math.random()*2)+'s';d.style.animationDelay=Math.random()*.8+'s';document.body.appendChild(d);setTimeout(()=>d.remove(),5000)}}
+
+/* ---------- הגדרות ---------- */
+const M=document.getElementById('setModal');
+function openSet(){document.getElementById('sName').value=S.name;document.getElementById('sBirth').value=S.birth;document.querySelectorAll('#sGender button').forEach(b=>b.classList.toggle('sel',b.dataset.g===S.g));M.classList.add('on')}
+document.getElementById('setBtn').onclick=openSet;
+document.getElementById('closeSet').onclick=()=>M.classList.remove('on');
+document.querySelectorAll('#sGender button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#sGender button').forEach(x=>x.classList.remove('sel'));b.classList.add('sel')});
+document.getElementById('saveSet').onclick=()=>{
+  S.name=document.getElementById('sName').value.trim();S.birth=document.getElementById('sBirth').value;
+  const g=document.querySelector('#sGender .sel');S.g=g?g.dataset.g:'m';
+  store.set('name',S.name);store.set('birth',S.birth);store.set('g',S.g);
+  M.classList.remove('on');renderHome();
+  if(document.getElementById('world').classList.contains('on')&&document.getElementById('agePizza'))openWorld('pizza');
+};
+</script>
+</body>
+</html>
